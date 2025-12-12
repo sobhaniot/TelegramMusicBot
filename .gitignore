@@ -1,0 +1,16 @@
+Z_Config.json
+src\\Z_Config.json
+src/Z_Config.json
+__pycache__/
+*.pyc
+*.pyo
+*.env
+*.DS_Store
+.idea/
+src\\__pycache__/
+src\\*.pyc
+src\\*.pyo
+src\\*.env
+src\\*.DS_Store
+src\\.idea/
+build/
