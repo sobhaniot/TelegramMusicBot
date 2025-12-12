@@ -59,7 +59,10 @@ def convert_to_ogg(info):
 
 def add_cover_to_mp3(info):
     mp3_file = info["MP3"]
-    cover_image = info["cover"]
+    if info["cover"]:
+        cover_image = info["cover"]
+    else:
+        cover_image = info["default_cover"]
 
     audio = ID3(mp3_file)
     with open(cover_image, "rb") as img:

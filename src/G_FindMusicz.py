@@ -43,6 +43,9 @@ def FindMusicz(self):
         music_dict[music_name]["Song"] = song.strip()
 
         music_dict[music_name]["caption"] = f"Artist: {music_dict[music_name]['Artist']} \nSong: {music_dict[music_name]['Song']}"
+
+        music_dict[music_name]["default_cover"] = "E:\@MusicBot\PIC\Cover\Cover.jpg"
+
         print("finished")
 
     self.output.append(f"Found {len(music_dict)} music files.\n")

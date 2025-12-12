@@ -31,6 +31,7 @@ def find_best_cover(self):
             print(f"{music_name} --> {best_ratio:.2f}")
             self.music_dict[music_name]["cover"] = best_match
         else:
-            self.music_dict["cover"] = "E:\@MusicBot\PIC\Cover\Cover.jpg"
+            self.music_dict[music_name]["cover"] = None
+
 
     # pprint.pprint(self.music_dict)

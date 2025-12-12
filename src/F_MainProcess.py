@@ -12,9 +12,10 @@ from src import H_Telegram as HT
 def start_processing(self):
     clear_mp3_folder(self)
     GFM.FindMusicz(self)
-    EFBC.find_best_cover(self)
-    CC.do_convert(self)
-    HT.send_music_package(self)
+    if len(self.music_dict):
+        EFBC.find_best_cover(self)
+        CC.do_convert(self)
+        HT.send_music_package(self)
 
 
 def clear_mp3_folder(self):
