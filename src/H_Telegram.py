@@ -29,7 +29,13 @@ def send_music_package(self):
 
 
     #send intro pic and caption
-    resIntro = send_intro(BASE_URL, chat_id, self.config["intro_pic_folder"])
+    resIntro = safe_send(
+        send_intro,
+        BASE_URL,
+        chat_id,
+        self.config["intro_pic_folder"],
+        MSG="Sending Intro"
+    )
 
     for index in range(send_count):
         music_name, info = music_list[index]
@@ -38,18 +44,33 @@ def send_music_package(self):
         pprint.pprint(info)
 
         # 1) ارسال عکس
-        if info.get("cover") and os.path.exists(info["cover"]):
-            resCover = send_pic(BASE_URL, chat_id, info["cover"], info["caption"])
-        else:
-            resCover = send_pic(BASE_URL, chat_id, info["default_cover"], info["caption"])
-
+        resCover = safe_send(
+            send_pic,
+            BASE_URL,
+            chat_id,
+            info["cover"] if info.get("cover") and os.path.exists(info["cover"]) else info["default_cover"],
+            info["caption"],
+            MSG="Sending Cover"
+        )
         # 2) ارسال ویس OGG
-        if info.get("OGG") and os.path.exists(info["OGG"]):
-            resOGG = send_voice(BASE_URL, chat_id, info["OGG"], info["caption"])
+        resOGG = safe_send(
+            send_voice,
+            BASE_URL,
+            chat_id,
+            info["OGG"],
+            info["caption"],
+            MSG="Sending OGG"
+        )
 
         # 3) ارسال MP3 کامل
-        if info.get("MP3") and os.path.exists(info["MP3"]):
-            resMP3 = send_audio(BASE_URL, chat_id, info["MP3"], info["caption"])
+        resMP3 = safe_send(
+            send_audio,
+            BASE_URL,
+            chat_id,
+            info["MP3"],
+            info["caption"],
+            MSG="Sending MP3"
+        )
 
         print(resCover)
         print(resOGG)
@@ -71,7 +92,6 @@ def send_pic(BASE_URL, chat_id: int, photo_name: str, caption: str = ""):
     with open(photo_name, "rb") as photo:
         files = {"photo": photo}
         params = {"chat_id": chat_id, "caption": caption}
-
         response = requests.post(url, data=params, files=files)
 
     return response.json()
@@ -138,3 +158,31 @@ def send_intro(BASE_URL, chat_id: int,folder: str):
 
     return resIntro
 
+def safe_send(send_func, *args, retry_delay=300, MSG="", **kwargs):
+    """
+    send_func : تابع ارسال (send_pic / send_voice / send_audio)
+    args      : پارامترهای تابع
+    kwargs    : پارامترهای کلیدی تابع
+    """
+
+    while True:
+        try:
+            print(MSG)
+            response = send_func(*args, **kwargs)
+
+            # اگر پاسخ معتبر بود
+            if isinstance(response, dict) and response.get("ok"):
+                return response
+
+            print("❌ Telegram error:", response)
+            print("⏳ Retrying in 5 minutes...")
+
+        except requests.RequestException as e:
+            print("❌ Network error:", e)
+            print("⏳ Retrying in 5 minutes...")
+
+        except Exception as e:
+            print("❌ Unexpected error:", e)
+            print("⏳ Retrying in 5 minutes...")
+
+        time.sleep(retry_delay)

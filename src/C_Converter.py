@@ -2,20 +2,21 @@ import os
 import sys
 
 from pydub import AudioSegment
-from mutagen.mp3 import EasyMP3
-from mutagen.id3 import ID3, APIC
-from mutagen.oggvorbis import OggVorbis
-from pydub.utils import which
+from mutagen.id3 import ID3, TIT2, TPE1, TALB, TDRC, TCON, APIC
+from mutagen.mp3 import MP3
 
 ffmpeg_path  = r"G:\Python\.venv\Lib\ffmpeg\bin"
 os.environ["PATH"] += os.pathsep + ffmpeg_path
 
 def do_convert(self):
-    pass
-    for music_name in self.music_dict:
+    for music_name in list(self.music_dict.keys()):
         # print(music_name)
         # print(self.music_dict[music_name])
-        convert_to_mp3(self.music_dict[music_name])
+        if not convert_to_mp3(self.music_dict[music_name]):
+            print(f"[REMOVED] {music_name}")
+            del self.music_dict[music_name]
+            continue
+
         convert_to_ogg(self.music_dict[music_name])
         add_cover_to_mp3(self.music_dict[music_name])
         # add_cover_to_ogg(self.music_dict[music_name])
@@ -25,9 +26,46 @@ def convert_to_mp3(info):
     input_file = info["MP4"]
     output_file = info["MP3"]
     bitrate = "192k"
+    if not input_file or not os.path.isfile(input_file):
+        print(f"[SKIP] Input file not found: {input_file}")
+        return False
 
-    audio = AudioSegment.from_file(input_file)
-    audio.export(output_file, format="mp3", bitrate=bitrate)
+    try:
+
+        audio = AudioSegment.from_file(input_file)
+        audio.export(output_file, format="mp3", bitrate=bitrate)
+
+        mp3 = MP3(output_file, ID3=ID3)
+
+        try:
+            mp3.add_tags()
+        except:
+            pass
+
+        if "Song" in info:
+            mp3.tags.add(TIT2(encoding=3, text=info["Song"]))
+
+        if "Artist" in info:
+            mp3.tags.add(TPE1(encoding=3, text=info["Artist"]))
+
+        if "album" in info:
+            mp3.tags.add(TALB(encoding=3, text=info["album"]))
+
+        if "year" in info:
+            mp3.tags.add(TDRC(encoding=3, text=info["year"]))
+
+        if "genre" in info:
+            mp3.tags.add(TCON(encoding=3, text=info["genre"]))
+
+        mp3.save()
+        print(f"[OK] Converted & tagged: {output_file}")
+        return True
+
+
+    except Exception as e:
+        print(f"[ERROR] {input_file} -> {e}")
+
+    return False
 
 
 def convert_to_ogg(info):

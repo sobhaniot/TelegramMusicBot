@@ -28,7 +28,7 @@ def find_best_cover(self):
 
 
         if best_ratio >= 0.9:
-            print(f"{music_name} --> {best_ratio:.2f}")
+            print(f"{music_name} --> {best_ratio:.2f} --> {best_match}")
             self.music_dict[music_name]["cover"] = best_match
         else:
             self.music_dict[music_name]["cover"] = None

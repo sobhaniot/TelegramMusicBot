@@ -49,8 +49,8 @@ def FindMusicz(self):
         print("finished")
 
     self.output.append(f"Found {len(music_dict)} music files.\n")
-    for name, path in music_dict.items():
-        self.output.append(f"{name} --> {path}")
+    # for name, path in music_dict.items():
+    #     self.output.append(f"{name} --> {path}")
 
     # در صورت نیاز بعداً به self.music_dict ذخیره‌اش می‌کنیم
     self.music_dict = music_dict

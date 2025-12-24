@@ -64,6 +64,13 @@ class MusicBotGui(QWidget):
 
         self.init_ui()
 
+        if self.worker_thread is None or not self.worker_thread.isRunning():
+            self.worker_thread = MusicSenderThread(self)
+            self.worker_thread.finished_signal.connect(lambda: print("Thread finished"))
+            self.worker_thread.start()
+            self.output.append(">>> Music sending thread started")
+
+
     def init_ui(self):
         self.setWindowTitle("Music Bot")
         layout = QVBoxLayout()
@@ -150,8 +157,8 @@ class MusicBotGui(QWidget):
         tele_layout.addLayout(h3)
 
         # --- Buttons
-        self.btn_start = QPushButton("Start")
-        self.btn_stop = QPushButton("Stop")
+        self.btn_save = QPushButton("Save")
+        # self.btn_stop = QPushButton("Stop")
 
 
         layout.addWidget(self.lbl_clock)
@@ -166,16 +173,16 @@ class MusicBotGui(QWidget):
         layout.addLayout(self.NumMusic)
         layout.addLayout(time_layout)
         layout.addLayout(tele_layout)
-        layout.addWidget(self.btn_start)
-        layout.addWidget(self.btn_stop)
+        layout.addWidget(self.btn_save)
+        # layout.addWidget(self.btn_stop)
 
         self.setLayout(layout)
 
         # --- Connect events
         self.btn_music.clicked.connect(self.select_music_folder)
         self.btn_images.clicked.connect(self.select_image_folder)
-        self.btn_start.clicked.connect(self.start_thread)
-        self.btn_stop.clicked.connect(self.stop_thread)
+        self.btn_save.clicked.connect(self.save_thread)
+        # self.btn_stop.clicked.connect(self.stop_thread)
 
     def update_clock(self):
         now = datetime.now().strftime("%H:%M:%S")
@@ -208,18 +215,14 @@ class MusicBotGui(QWidget):
         QMessageBox.information(self, "Saved", "Saving successfully")
 
     # ---------- Start/Stop Thread ----------
-    def start_thread(self):
+    def save_thread(self):
         self.save_settings()
-        if self.worker_thread is None or not self.worker_thread.isRunning():
-            self.worker_thread = MusicSenderThread(self)
-            self.worker_thread.finished_signal.connect(lambda: print("Thread finished"))
-            self.worker_thread.start()
-            self.output.append(">>> Music sending thread started")
 
-    def stop_thread(self):
-        if self.worker_thread and self.worker_thread.isRunning():
-            self.worker_thread.stop()
-            self.output.append(">>> Music sending thread stopped")
+
+    # def stop_thread(self):
+    #     if self.worker_thread and self.worker_thread.isRunning():
+    #         self.worker_thread.stop()
+    #         self.output.append(">>> Music sending thread stopped")
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
