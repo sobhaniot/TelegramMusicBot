@@ -33,8 +33,23 @@ def load_config():
 def save_config(data):
 
     data["MP3_Folder"] = create_sibling_folder(data["music_folder"])
+    if data["image_folder"]:
+        data["intro_pic_folder"] = check_and_create_dir(data["image_folder"] + "\\Intro")
+        data["default_cover"] = check_and_create_dir(data["image_folder"] + "\\Cover")
+
     with open(CONFIG_PATH, "w", encoding="utf-8") as f:
         json.dump(data, f, indent=4, ensure_ascii=False)
+
+
+def check_and_create_dir(dir_path):
+    if not os.path.exists(dir_path):
+        os.makedirs(dir_path)
+        print(f"Directory created: {dir_path}")
+    else:
+        print(f"Directory already exists: {dir_path}")
+
+    return dir_path
+
 
 def create_sibling_folder(base_folder):
     """

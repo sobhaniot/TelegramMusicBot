@@ -2,8 +2,9 @@ import os
 import pprint
 import random
 import time
-
 import requests
+
+debug = True
 
 def send_music_package(self):
     """
@@ -43,6 +44,8 @@ def send_music_package(self):
         print(f"\n=== Sending music {index + 1}/{send_count} ===")
         pprint.pprint(info)
 
+        if debug:
+            return
         # 1) ارسال عکس
         resCover = safe_send(
             send_pic,
