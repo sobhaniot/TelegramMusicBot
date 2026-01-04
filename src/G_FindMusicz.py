@@ -23,6 +23,13 @@ def FindMusicz(self):
         clean_name = clean_name.strip()
         print(clean_name)
 
+        hashtag = ''
+
+        if "#" in clean_name:
+            clean_name, hashtag = clean_name.split("#",1)
+            hashtag = ("#" + hashtag).replace("#","\n#")
+            print(hashtag)
+
         if clean_name != original_name:
             old_path = os.path.join(music_folder, original_name)
             new_path = os.path.join(music_folder, clean_name)
@@ -43,8 +50,9 @@ def FindMusicz(self):
         music_dict[music_name]["Song"] = song.strip()
 
         music_dict[music_name]["caption"] = f"Artist: {music_dict[music_name]['Artist']} \nSong: {music_dict[music_name]['Song']}"
+        music_dict[music_name]["hashtag"] = hashtag
 
-        music_dict[music_name]["default_cover"] = self.config['default_cover']
+        music_dict[music_name]["default_cover"] = self.config.get('default_cover') + "\\Cover.jpg"
 
         print("finished")
 

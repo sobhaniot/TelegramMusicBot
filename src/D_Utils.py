@@ -14,7 +14,7 @@ CONFIG_PATH = os.path.join(BASE_DIR, "Z_Config.json")
 print(f"CONFIG_PATH: {CONFIG_PATH}")
 
 DEFAULT_CONFIG = {
-    "music_folder": "Music",
+    "music_folder": "",
     "MP3_Folder": ""
 }
 
@@ -25,20 +25,45 @@ def ensure_config():
         with open(CONFIG_PATH, "w", encoding="utf-8") as f:
             json.dump(DEFAULT_CONFIG, f, indent=4, ensure_ascii=False)
 
+
+def validate_config(self):
+    # لیست کلیدهایی که حتماً باید مقدار داشته باشند
+    required_keys = ['music_folder', 'MP3_Folder', 'default_cover','telegram_token','telegram_chat_id',
+                     'image_folder']
+
+    for key in required_keys:
+        # چک می‌کند که آیا کلید وجود دارد و مقدار آن خالی یا None نیست
+        value = self.config.get(key)
+        if not value:
+            print(f"Error: Key '{key}' is missing or empty in config.")
+            self.output.append(f"Error: Key '{key}' is missing or empty in config.")
+            return False
+
+    if not os.path.isfile(self.config["default_cover"] + "\\Cover.jpg"):
+        print("Please add Cover.jpg to the Cover folder in ImageFolder.")
+        return False
+
+    return True
+
 def load_config():
     ensure_config()
     with open(CONFIG_PATH, "r", encoding="utf-8") as f:
         return json.load(f)
 
-def save_config(data):
+def save_config(self):
+    if self.config["image_folder"]:
+        self.config["intro_pic_folder"] = check_and_create_dir(self.config["image_folder"] + "\\Intro")
+        self.config["default_cover"] = check_and_create_dir(self.config["image_folder"] + "\\Cover")
 
-    data["MP3_Folder"] = create_sibling_folder(data["music_folder"])
-    if data["image_folder"]:
-        data["intro_pic_folder"] = check_and_create_dir(data["image_folder"] + "\\Intro")
-        data["default_cover"] = check_and_create_dir(data["image_folder"] + "\\Cover")
+    self.config["MP3_Folder"] = create_sibling_folder(self.config["music_folder"])
+
+    if not validate_config(self):
+        return False
 
     with open(CONFIG_PATH, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=4, ensure_ascii=False)
+        json.dump(self.config, f, indent=4, ensure_ascii=False)
+
+    return True
 
 
 def check_and_create_dir(dir_path):

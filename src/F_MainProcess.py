@@ -7,15 +7,19 @@ from src import G_FindMusicz as GFM
 from src import E_FindBestCover as EFBC
 from src import C_Converter as CC
 from src import H_Telegram as HT
-
+from src import D_Utils as DU
 
 def start_processing(self):
+    if not DU.validate_config(self):
+        return False
     clear_mp3_folder(self)
     GFM.FindMusicz(self)
     if len(self.music_dict):
         EFBC.find_best_cover(self)
         CC.do_convert(self)
         HT.send_music_package(self)
+
+    return True
 
 
 def clear_mp3_folder(self):

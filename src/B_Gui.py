@@ -38,7 +38,10 @@ class MusicSenderThread(QThread):
             today = datetime.now().date()
             if in_range and last_run_date != today:
                 # اجرا در Thread جداگانه
-                FMP.start_processing(self.gui_self)
+                if not FMP.start_processing(self.gui_self):
+                    time.sleep(180)
+                    continue
+
                 last_run_date = today
 
             # جلوگیری از استفاده 100% CPU
@@ -211,8 +214,10 @@ class MusicBotGui(QWidget):
         self.config["telegram_token"] = self.txt_token.text().strip()
         self.config["telegram_chat_id"] = self.txt_chatid.text().strip()
 
-        DU.save_config(self.config)
-        QMessageBox.information(self, "Saved", "Saving successfully")
+        if DU.save_config(self):
+            QMessageBox.information(self, "Saved", "Saving successfully")
+        else:
+            QMessageBox.information(self, "Saved", "Saving failed")
 
     # ---------- Start/Stop Thread ----------
     def save_thread(self):

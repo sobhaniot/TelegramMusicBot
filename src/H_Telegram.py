@@ -4,7 +4,7 @@ import random
 import time
 import requests
 
-debug = True
+debug = False
 
 def send_music_package(self):
     """
@@ -30,13 +30,14 @@ def send_music_package(self):
 
 
     #send intro pic and caption
-    resIntro = safe_send(
-        send_intro,
-        BASE_URL,
-        chat_id,
-        self.config["intro_pic_folder"],
-        MSG="Sending Intro"
-    )
+    if not debug:
+        resIntro = safe_send(
+            send_intro,
+            BASE_URL,
+            chat_id,
+            self.config["intro_pic_folder"],
+            MSG="Sending Intro"
+        )
 
     for index in range(send_count):
         music_name, info = music_list[index]
@@ -47,12 +48,13 @@ def send_music_package(self):
         if debug:
             return
         # 1) ارسال عکس
+
         resCover = safe_send(
             send_pic,
             BASE_URL,
             chat_id,
             info["cover"] if info.get("cover") and os.path.exists(info["cover"]) else info["default_cover"],
-            info["caption"],
+            info["caption"] + "\n" + info.get("hashtag") + "\n\n👽@TechnoHouseRapMusic ☠️☠️",
             MSG="Sending Cover"
         )
         # 2) ارسال ویس OGG
@@ -71,7 +73,7 @@ def send_music_package(self):
             BASE_URL,
             chat_id,
             info["MP3"],
-            info["caption"],
+            info["caption"] + "\n\n👽@TechnoHouseRapMusic ☠️☠️",
             MSG="Sending MP3"
         )
 
@@ -81,8 +83,9 @@ def send_music_package(self):
         if resCover["ok"] and resOGG["ok"] and resMP3["ok"]:
             os.remove(info["MP4"])
             print("Deleted:", info["MP4"])
-            os.remove(info["cover"])
-            print("Deleted:", info["cover"])
+            if info["cover"]:
+                os.remove(info["cover"])
+                print("Deleted:", info["cover"])
 
         # اگر delay تنظیم شده باشد
         if delay and delay > 0:
@@ -144,22 +147,21 @@ def send_intro(BASE_URL, chat_id: int,folder: str):
 
     if not files:
         print("No pictures in folder!")
-        return None
-    print(files)
+        return {"ok": True}
+    else:
+        pic_file = random.choice(files)
+        pic_path = os.path.join(folder, pic_file)
+        print(f"Sending picture: {pic_path}")
 
-    pic_file = random.choice(files)
-    pic_path = os.path.join(folder, pic_file)
-    print(f"Sending picture: {pic_path}")
+        resIntro = send_pic(BASE_URL, chat_id, pic_path, introCaption)
 
-    resIntro = send_pic(BASE_URL, chat_id, pic_path, introCaption)
+        try:
+            os.remove(pic_path)
+            print(f"Picture deleted: {pic_path}")
+        except Exception as e:
+            print(f"Error deleting picture: {e}")
 
-    try:
-        os.remove(pic_path)
-        print(f"Picture deleted: {pic_path}")
-    except Exception as e:
-        print(f"Error deleting picture: {e}")
-
-    return resIntro
+        return resIntro
 
 def safe_send(send_func, *args, retry_delay=300, MSG="", **kwargs):
     """
@@ -167,7 +169,6 @@ def safe_send(send_func, *args, retry_delay=300, MSG="", **kwargs):
     args      : پارامترهای تابع
     kwargs    : پارامترهای کلیدی تابع
     """
-
     while True:
         try:
             print(MSG)

@@ -96,11 +96,17 @@ def convert_to_ogg(info):
     )
 
 def add_cover_to_mp3(info):
+    print("Adding cover to MP3")
     mp3_file = info["MP3"]
     if info["cover"]:
+        print("Cover Find")
         cover_image = info["cover"]
-    else:
+    elif info["default_cover"] and os.path.isfile(info["default_cover"]):
+        print("Default Cover Find")
         cover_image = info["default_cover"]
+    else:
+        print("Cover Not Find")
+        return
 
     audio = ID3(mp3_file)
     with open(cover_image, "rb") as img:
@@ -112,6 +118,7 @@ def add_cover_to_mp3(info):
             data=img.read()
         )
     audio.save()
+    print(f"[OK] Cover: {cover_image}")
 
 
 # def add_cover_to_ogg(info):
